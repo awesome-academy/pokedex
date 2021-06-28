@@ -24,10 +24,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                              NSAttributedString.Key.foregroundColor: App.Color.fontText]
         UINavigationBar.appearance().barTintColor = App.Color.backgroundColorHeader
         UINavigationBar.appearance().titleTextAttributes = attributesNav
+        UINavigationBar.appearance().isTranslucent = false
         
         //configure font UITextField
         let attributesSearchBar = [NSAttributedString.Key.font: App.Font.pixel12]
         UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).defaultTextAttributes = attributesSearchBar
+        
+        //configure UIBarButtonItem
+        let attributesBarButton = [NSAttributedString.Key.font: App.Font.pixel18,
+                             NSAttributedString.Key.foregroundColor: App.Color.fontText]
+        
+        UIBarButtonItem.appearance().setTitleTextAttributes(attributesBarButton, for: .normal)
         
         return true
     }

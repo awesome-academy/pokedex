@@ -9,4 +9,5 @@ import UIKit
 
 extension App.Cache {
     static let cacheImage = NSCache<NSNumber, UIImage>()
+    static let cacheBackgroundColor = NSCache<NSString, UIColor>()
 }
