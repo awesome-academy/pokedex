@@ -7,6 +7,26 @@
 
 import UIKit
 
+enum BaseStats: String {
+    case hp = "hp"
+    case attack = "attack"
+    case defense = "defense"
+    case speed = "speed"
+    
+    var baseStatColor: UIColor {
+        switch self {
+        case .hp:
+            return App.Color.fire
+        case .attack:
+            return App.Color.electric
+        case .defense:
+            return App.Color.water
+        case .speed:
+            return App.Color.grass
+        }
+    }
+}
+
 extension App.Color {
     static let normal = UIColor(red: 170 / 255, green: 170  / 255, blue: 155  / 255, alpha: 1)
     static let fire = UIColor(red: 236  / 255, green: 83  / 255, blue: 53  / 255, alpha: 1)
@@ -31,4 +51,5 @@ extension App.Color {
     static let fontTextTitle = UIColor(red: 129  / 255, green: 129  / 255, blue: 129  / 255, alpha: 1)
     static let fontText = UIColor(red: 255  / 255, green: 255  / 255, blue: 255  / 255, alpha: 1)
     static let backgroundSearchBar = UIColor(red: 238 / 255, green: 238 / 255, blue: 239 / 255, alpha: 1)
+    static let backgroundColorStat = UIColor(red: 196 / 255, green: 196 / 255, blue: 196 / 255, alpha: 1)
 }

@@ -27,6 +27,7 @@
 		26D2791C2684DEE20059B42B /* GenresViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D2791B2684DEE20059B42B /* GenresViewController.swift */; };
 		26D2791F2684DEF00059B42B /* FavoritesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D2791E2684DEF00059B42B /* FavoritesViewController.swift */; };
 		26D279222684DF110059B42B /* DetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26D279212684DF110059B42B /* DetailsViewController.swift */; };
+		26F74521268B02E8001C973A /* Int.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26F74520268B02E8001C973A /* Int.swift */; };
 		26FE196026897114008C3B5C /* String.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FE195F26897114008C3B5C /* String.swift */; };
 		26FE1963268972B6008C3B5C /* APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FE1962268972B6008C3B5C /* APIService.swift */; };
 		26FE1967268976A0008C3B5C /* FooterPokedexReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FE1966268976A0008C3B5C /* FooterPokedexReusableView.swift */; };
@@ -55,6 +56,7 @@
 		26D2791B2684DEE20059B42B /* GenresViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenresViewController.swift; sourceTree = "<group>"; };
 		26D2791E2684DEF00059B42B /* FavoritesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavoritesViewController.swift; sourceTree = "<group>"; };
 		26D279212684DF110059B42B /* DetailsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailsViewController.swift; sourceTree = "<group>"; };
+		26F74520268B02E8001C973A /* Int.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Int.swift; sourceTree = "<group>"; };
 		26FE195F26897114008C3B5C /* String.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = String.swift; sourceTree = "<group>"; };
 		26FE1962268972B6008C3B5C /* APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIService.swift; sourceTree = "<group>"; };
 		26FE1966268976A0008C3B5C /* FooterPokedexReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FooterPokedexReusableView.swift; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 			children = (
 				2622946E2685B0FD00AB8595 /* UIImage.swift */,
 				26FE195F26897114008C3B5C /* String.swift */,
+				26F74520268B02E8001C973A /* Int.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -328,6 +331,7 @@
 			files = (
 				26FE1963268972B6008C3B5C /* APIService.swift in Sources */,
 				26D2791C2684DEE20059B42B /* GenresViewController.swift in Sources */,
+				26F74521268B02E8001C973A /* Int.swift in Sources */,
 				26D2791F2684DEF00059B42B /* FavoritesViewController.swift in Sources */,
 				2640786C2685D92A007B96B4 /* App.Cache.swift in Sources */,
 				26D279052684D9260059B42B /* App.swift in Sources */,
