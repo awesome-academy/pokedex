@@ -9,19 +9,20 @@ import UIKit
 
 class SearchBarView: UIView {
     
-    private let searchBar: UISearchBar = {
+    let searchBar: UISearchBar = {
         let searchBar = UISearchBar()
         searchBar.backgroundColor = App.Color.backgroundSearchBar
         searchBar.searchTextField.backgroundColor = .white
         searchBar.placeholder = "Enter name or id pokemon"
         searchBar.searchBarStyle = .minimal
+        searchBar.autocapitalizationType = .none
         return searchBar
     }()
     
     override init(frame: CGRect) {
         super.init(frame: frame)
     
-        self.configureSearchBar()
+        configureSearchBar()
     }
     
     required init?(coder: NSCoder) {
@@ -30,10 +31,11 @@ class SearchBarView: UIView {
     
     override func layoutSubviews() {
         super.layoutSubviews()
-        self.searchBar.frame = self.bounds
+        searchBar.frame = bounds
     }
     
     func configureSearchBar() {
-        self.addSubview(self.searchBar)
+        addSubview(searchBar)
+        translatesAutoresizingMaskIntoConstraints = false
     }
 }

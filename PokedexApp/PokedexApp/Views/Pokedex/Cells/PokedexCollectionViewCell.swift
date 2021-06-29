@@ -25,12 +25,6 @@ class PokedexCollectionViewCell: UICollectionViewCell {
         return namePokemon
     }()
     
-    private let idPokemon: UILabel = {
-        let idPokemon = UILabel()
-        idPokemon.translatesAutoresizingMaskIntoConstraints = false
-        return idPokemon
-    }()
-    
     // MARK: - Setup init
     
     override init(frame: CGRect) {
@@ -38,10 +32,8 @@ class PokedexCollectionViewCell: UICollectionViewCell {
 
         contentView.layer.masksToBounds = true
         contentView.layer.cornerRadius = 20
-        
         contentView.addSubview(imagePokemon)
         contentView.addSubview(namePokemon)
-        contentView.addSubview(idPokemon)
     }
     
     required init?(coder: NSCoder) {
@@ -53,16 +45,13 @@ class PokedexCollectionViewCell: UICollectionViewCell {
     override func layoutSubviews() {
         super.layoutSubviews()
         
+        let sizeImage = (75 / contentView.bounds.width)
+        
         NSLayoutConstraint.activate([
             imagePokemon.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             imagePokemon.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            imagePokemon.heightAnchor.constraint(equalToConstant: 125),
-            imagePokemon.widthAnchor.constraint(equalToConstant: 125)
-        ])
-        
-        NSLayoutConstraint.activate([
-            idPokemon.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: 15),
-            idPokemon.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -10)
+            imagePokemon.heightAnchor.constraint(equalTo: contentView.heightAnchor, multiplier: sizeImage),
+            imagePokemon.widthAnchor.constraint(equalTo: contentView.widthAnchor, multiplier: sizeImage)
         ])
         
         NSLayoutConstraint.activate([
@@ -73,41 +62,28 @@ class PokedexCollectionViewCell: UICollectionViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
+        contentView.backgroundColor = nil
     }
     
     // MARK: - Setup method
     
-    func configure(pokemon: Pokemon) {
-        // configure name & id pokemon
+    func configure(pokemon: PokemonURL) {
+        // configure name
         namePokemon.font = App.Font.pixel16
-        namePokemon.text = pokemon.name
+        namePokemon.text = pokemon.name.capitalizingFirstLetter()
         namePokemon.textColor = App.Color.fontText
         
-        idPokemon.font = App.Font.pixel16
-        idPokemon.text = "#\(pokemon.id)"
-        idPokemon.textColor = App.Color.fontText
-        
         //background color
-        contentView.backgroundColor = pokemon.type.backgroundColor
+        let keyCache = NSString(string: pokemon.url)
         
-        //configure url image pokemon
-        let keyCache = NSNumber(value: pokemon.id)
-        
-        if let cachedImage = App.Cache.cacheImage.object(forKey: keyCache) {
-            imagePokemon.image = cachedImage
-            return
+        if let cachedBackgroundColor = App.Cache.cacheBackgroundColor.object(forKey: keyCache) {
+            contentView.backgroundColor = cachedBackgroundColor
+        } else {
+            let backgroundColor = PokemonType.randomColor
+            contentView.backgroundColor = backgroundColor
+            App.Cache.cacheBackgroundColor.setObject(backgroundColor, forKey: keyCache)
         }
         
-        DispatchQueue.global(qos: .utility).async {
-            guard let url = URL(string: pokemon.urlImage) else { return }
-            
-            if let data = try? Data(contentsOf: url) {
-                DispatchQueue.main.async { [weak self] in
-                    guard let image = UIImage(data: data) else { return }
-                    self?.imagePokemon.image = image
-                    App.Cache.cacheImage.setObject(image, forKey: keyCache)
-                }
-            }
-        }
+        imagePokemon.image = UIImage(named: "pokeball")
     }
 }
