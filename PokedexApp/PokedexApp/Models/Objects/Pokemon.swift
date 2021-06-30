@@ -7,7 +7,7 @@
 
 import UIKit
 
-enum PokemonType: String, Codable {
+enum PokemonType: String, Codable, CaseIterable {
     case normal = "normal", fire = "fire", water = "water", grass = "grass",
          electric = "electric", ice = "ice", fighting = "fighting", poison = "poison",
          ground = "ground", flying = "flying", psychic = "psychic", bug = "bug",

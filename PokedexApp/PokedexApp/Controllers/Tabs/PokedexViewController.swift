@@ -39,6 +39,8 @@ class PokedexViewController: UIViewController {
     }()
     
     private var pokemons = [PokemonURL]()
+    private var pokemonsType = [PokemonsTypeURL]()
+    private var nameType = ""
     private var spinner = UIActivityIndicatorView()
     private var checkLoad = false
     private let layout = UICollectionViewFlowLayout()
@@ -52,14 +54,17 @@ class PokedexViewController: UIViewController {
         configure()
         configureCollectionView()
         tapScreenDismissKeyboard()
-        getPokemonsFromAPI()
+        choiceRunAPI()
         configureSearchBar()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationItem.title = "Pokedex"
-        navigationController?.navigationBar.barTintColor = App.Color.backgroundColorHeader
+        if let nav = navigationController {
+            nav.navigationBar.barTintColor = App.Color.backgroundColorHeader
+            nav.navigationBar.tintColor = App.Color.fontText
+        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -72,16 +77,15 @@ class PokedexViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         
-        setupLayoutSearchBar()
+        setupLayoutSearchBar(height: 40)
         setupLayoutCollectionView()
         
         view.addSubview(textNotification)
         textNotification.frame = view.bounds
-
     }
     
     // MARK: - Setup method
-
+    
     private func configure() {
         view.backgroundColor = App.Color.backgroundColor
         navigationItem.title = "Pokedex"
@@ -102,14 +106,14 @@ class PokedexViewController: UIViewController {
         uiViewSearchBar.searchBar.delegate = self
     }
     
-    private func setupLayoutSearchBar() {
+    private func setupLayoutSearchBar(height: CGFloat) {
         view.addSubview(uiViewSearchBar)
         
         NSLayoutConstraint.activate([
             uiViewSearchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             uiViewSearchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             uiViewSearchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            uiViewSearchBar.heightAnchor.constraint(equalToConstant: 40)
+            uiViewSearchBar.heightAnchor.constraint(equalToConstant: height)
         ])
     }
     
@@ -136,7 +140,7 @@ class PokedexViewController: UIViewController {
         view.endEditing(true)
     }
     
-    private func getPokemonsFromAPI() {
+    func getPokemonsFromAPI() {
         layout.footerReferenceSize = CGSize(width: collectionView.frame.size.width, height: 100)
         spinner.startAnimating()
         textNotification.text = ""
@@ -157,8 +161,40 @@ class PokedexViewController: UIViewController {
                 }
                 
             case .failure(let error):
-                print("fetch pokemon url failed: \(error)")
+                print("fetch pokemon url failed: \(error.localizedDescription)")
             }
+        }
+    }
+    
+    func getPokemonsTypeFromAPI(type: String) {
+        layout.footerReferenceSize = CGSize(width: collectionView.frame.size.width, height: 100)
+        spinner.startAnimating()
+        textNotification.text = ""
+        setupLayoutSearchBar(height: 0)
+        nameType = type
+        
+        APIService.shared.fetchPokemonTypeURL(type: type) { [weak self] (result) in
+            switch result {
+            case .success(let pokemons):
+                guard let pokemons = pokemons, let self = self else { return }
+                
+                self.pokemonsType = pokemons
+                DispatchQueue.main.async {
+                    self.collectionView.reloadData()
+                    self.layout.footerReferenceSize = CGSize(width: 0, height: 0)
+                    self.spinner.stopAnimating()
+                    self.checkLoad.toggle()
+                }
+                
+            case .failure(let error):
+                print("fetch pokemon type url failed: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func choiceRunAPI() {
+        if pokemonsType.isEmpty {
+            getPokemonsFromAPI()
         }
     }
     
@@ -169,7 +205,7 @@ class PokedexViewController: UIViewController {
         checkLoad.toggle()
     }
     
-    func getPokemonByName(queryName: String) {
+    private func getPokemonByName(queryName: String) {
         layout.footerReferenceSize = CGSize(width: collectionView.frame.size.width, height: 100)
         spinner.startAnimating()
         textNotification.text = ""
@@ -203,14 +239,20 @@ class PokedexViewController: UIViewController {
             }
         }
     }
+    
+    static func instance(nameType: String) -> PokedexViewController {
+        let pokedexVC = PokedexViewController()
+        pokedexVC.getPokemonsTypeFromAPI(type: nameType)
+        return pokedexVC
+    }
 }
 
 // MARK: - Extensions
 extension PokedexViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        
-        let pokemonURL = pokemons[indexPath.row].url
+
+        let pokemonURL = pokemonsType.isEmpty ? pokemons[indexPath.row].url : pokemonsType[indexPath.row].pokemon.url
         getPokemon(url: pokemonURL)
     }
     
@@ -220,7 +262,7 @@ extension PokedexViewController: UICollectionViewDelegate {
         let frameScrollView = scrollView.frame.size.height
         
         if checkLoad && position > (contentSizeCollectionView - frameScrollView + 150) {
-            getPokemonsFromAPI()
+            choiceRunAPI()
             layout.footerReferenceSize = CGSize(width: collectionView.frame.size.width, height: 100)
             spinner.startAnimating()
             textNotification.text = ""
@@ -231,18 +273,25 @@ extension PokedexViewController: UICollectionViewDelegate {
 
 extension PokedexViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return pokemons.count
+        return pokemonsType.isEmpty ? pokemons.count : pokemonsType.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: PokedexCollectionViewCell.identifier,
                                                          for: indexPath) as? PokedexCollectionViewCell {
-            let pokemon = pokemons[indexPath.row]
-            cell.configure(pokemon: pokemon)
-            
-            return cell
+            if !pokemonsType.isEmpty {
+                let pokemonType = pokemonsType[indexPath.row]
+                cell.configure(pokemon: nil, pokemonType: pokemonType, nameType: nameType)
+                
+                return cell
+            }
+            else {
+                let pokemon = pokemons[indexPath.row]
+                cell.configure(pokemon: pokemon, pokemonType: nil, nameType: nil)
+                
+                return cell
+            }
         }
-        
         return UICollectionViewCell()
     }
     
@@ -264,7 +313,7 @@ extension PokedexViewController: UISearchBarDelegate {
         if searchText.isEmpty && (pokemons.count == 1 || pokemons.count == 0) {
             APIService.offset = 0
             pokemons = []
-            getPokemonsFromAPI()
+            choiceRunAPI()
             view.endEditing(true)
         }
     }

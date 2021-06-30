@@ -67,23 +67,39 @@ class PokedexCollectionViewCell: UICollectionViewCell {
     
     // MARK: - Setup method
     
-    func configure(pokemon: PokemonURL) {
-        // configure name
-        namePokemon.font = App.Font.pixel16
-        namePokemon.text = pokemon.name.capitalizingFirstLetter()
-        namePokemon.textColor = App.Color.fontText
-        
-        //background color
-        let keyCache = NSString(string: pokemon.url)
-        
-        if let cachedBackgroundColor = App.Cache.cacheBackgroundColor.object(forKey: keyCache) {
-            contentView.backgroundColor = cachedBackgroundColor
-        } else {
-            let backgroundColor = PokemonType.randomColor
-            contentView.backgroundColor = backgroundColor
-            App.Cache.cacheBackgroundColor.setObject(backgroundColor, forKey: keyCache)
+    func configure(pokemon: PokemonURL?, pokemonType: PokemonsTypeURL?, nameType: String?) {
+        if let pokemon = pokemon {
+            // configure name
+            namePokemon.font = App.Font.pixel16
+            namePokemon.text = pokemon.name.capitalizingFirstLetter()
+            namePokemon.textColor = App.Color.fontText
+            
+            //background color
+            let keyCache = NSString(string: pokemon.url)
+            
+            if let cachedBackgroundColor = App.Cache.cacheBackgroundColor.object(forKey: keyCache) {
+                contentView.backgroundColor = cachedBackgroundColor
+            } else {
+                let backgroundColor = PokemonType.randomColor
+                contentView.backgroundColor = backgroundColor
+                App.Cache.cacheBackgroundColor.setObject(backgroundColor, forKey: keyCache)
+            }
+            
+            imagePokemon.image = UIImage(named: "pokeball")
         }
         
-        imagePokemon.image = UIImage(named: "pokeball")
+        if let pokemonType = pokemonType, let nameType = nameType {
+            // configure name
+            namePokemon.font = App.Font.pixel16
+            namePokemon.text = pokemonType.pokemon.name.capitalizingFirstLetter()
+            namePokemon.textColor = App.Color.fontText
+            
+            //background color
+            guard let pokemonTypeColor = PokemonType(rawValue: nameType) else { return }
+            let backgroundColor = pokemonTypeColor.backgroundColor
+            contentView.backgroundColor = backgroundColor
+            
+            imagePokemon.image = UIImage(named: "pokeball")
+        }
     }
 }

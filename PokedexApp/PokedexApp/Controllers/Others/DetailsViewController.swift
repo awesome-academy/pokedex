@@ -17,6 +17,7 @@ class DetailsViewController: UIViewController {
         uiView.layer.cornerRadius = 40
         uiView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         uiView.translatesAutoresizingMaskIntoConstraints = false
+        uiView.isHidden = true
         return uiView
     }()
     
@@ -65,8 +66,10 @@ class DetailsViewController: UIViewController {
         stackView.subviews.forEach { (view) in
             view.removeFromSuperview()
         }
-        stackView.isHidden = false
+        
         spinner.stopAnimating()
+        backgroundColorHeader.isHidden = false
+        stackView.isHidden = false
     }
     
     private func configure() {
@@ -393,8 +396,8 @@ class DetailsViewController: UIViewController {
                 uiViewStat.translatesAutoresizingMaskIntoConstraints = false
 
                 let data = UILabel()
-                data.font = App.Font.pixel12
                 let dataText = String(describing: stat.baseStat)
+                data.font = App.Font.pixel12
                 data.text = stat.baseStat <= 100 ? "\(dataText)/100" : "100/100"
                 data.textColor = App.Color.fontText
                 data.backgroundColor = BaseStats(rawValue: stat.statName.name)?.baseStatColor
@@ -415,11 +418,12 @@ class DetailsViewController: UIViewController {
 
 
                 uiViewStat.addSubview(data)
-     
+                
+                let stat = CGFloat(stat.baseStat <= 100 ? stat.baseStat : 100)
+                
                 NSLayoutConstraint.activate([
                     data.topAnchor.constraint(equalTo: uiViewStat.topAnchor),
-                    data.widthAnchor.constraint(equalTo: uiViewStat.widthAnchor,
-                                                      multiplier: CGFloat(stat.baseStat) * 0.1 / 10),
+                    data.widthAnchor.constraint(equalTo: uiViewStat.widthAnchor,multiplier: (stat * 0.1) / 10),
                     data.heightAnchor.constraint(equalTo: uiViewStat.heightAnchor),
                 ])
 
