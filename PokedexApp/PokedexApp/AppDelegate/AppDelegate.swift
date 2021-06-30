@@ -33,7 +33,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //configure UIBarButtonItem
         let attributesBarButton = [NSAttributedString.Key.font: App.Font.pixel18,
                              NSAttributedString.Key.foregroundColor: App.Color.fontText]
-        
         UIBarButtonItem.appearance().setTitleTextAttributes(attributesBarButton, for: .normal)
         
         return true

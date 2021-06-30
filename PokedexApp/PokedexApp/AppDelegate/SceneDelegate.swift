@@ -54,7 +54,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // tabbar
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = [pokedexNav, genresNav, favoritesNav]
-        
         tabBarController.tabBar.barTintColor = App.Color.backgroundColor
         
         self.window = window
