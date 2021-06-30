@@ -186,6 +186,23 @@ class PokedexViewController: UIViewController {
         resetCollectionView()
         textNotification.text = "Pokemon you're looking for doesn't exist"
     }
+    
+    private func getPokemon(url: String) {        
+        APIService.shared.fetchPokemonFromURL(url: url) { [weak self] (result) in
+            guard let self = self else { return }
+            switch result {
+            case .success(let pokemonResponse):
+                DispatchQueue.main.async {
+                    let pokemonDetailViewController = DetailsViewController(pokemon: pokemonResponse)
+                    if let nav = self.navigationController {
+                        nav.pushViewController(pokemonDetailViewController, animated: true)
+                    }
+                }
+            case .failure(let error):
+                print("get pokemon failed: \(error)")
+            }
+        }
+    }
 }
 
 // MARK: - Extensions
@@ -193,8 +210,8 @@ extension PokedexViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         
-        let pokemonDetailViewController = DetailsViewController()
-        navigationController?.pushViewController(pokemonDetailViewController, animated: true)
+        let pokemonURL = pokemons[indexPath.row].url
+        getPokemon(url: pokemonURL)
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {

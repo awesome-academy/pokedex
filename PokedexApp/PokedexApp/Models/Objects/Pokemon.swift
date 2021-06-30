@@ -58,14 +58,14 @@ struct PokemonURL: Decodable {
 
 // pokemon detail
 struct Pokemon: Decodable {
-    let abilities: [PokemonAbility]
-    let forms: [PokemonForms]
-    let height: Int
-    let id: Int
-    let sprites: PokemonSprites
-    let types: [PokemonTypeURL]
-    let weight: Int
-    let stats: [Stat]
+    let abilities: [PokemonAbility]?
+    let forms: [PokemonForms]?
+    let height: Int?
+    let id: Int?
+    let sprites: PokemonSprites?
+    let types: [PokemonTypeURL]?
+    let weight: Int?
+    let stats: [Stat]?
 }
 
 struct PokemonAbility: Decodable {

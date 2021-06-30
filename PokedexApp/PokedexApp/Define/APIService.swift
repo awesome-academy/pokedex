@@ -32,4 +32,23 @@ struct APIService {
             }
         }.resume()
     }
+    
+    func fetchPokemonFromURL(url: String, completion: @escaping (Result<Pokemon, Error>) -> Void) {
+        guard let url = URL(string: url) else { return }
+        
+        URLSession.shared.dataTask(with: url) { (data, _, error) in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            
+            do {
+                guard let data = data else { return }
+                let pokemon = try JSONDecoder().decode(Pokemon.self, from: data)
+                completion(.success(pokemon))
+            } catch {
+                completion(.failure(error))
+            }
+        }.resume()
+    }
 }
