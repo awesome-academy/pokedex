@@ -448,7 +448,19 @@ class DetailsViewController: UIViewController {
         configureConstraintStackView()
     }
     
-    @objc private func didTapSavePokemon() {}
+    @objc private func didTapSavePokemon() {
+        if let pokemon = pokemon {
+            DatabaseManager.shared.addPokemon(pokemon: pokemon) { [weak self] (result) in
+                guard let self = self else { return }
+                let alert = UIAlertController(title: "Notification",
+                                              message: result,
+                                              preferredStyle: UIAlertController.Style.alert)
+                alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+            }
+        }
+    }
+    
     func configureImagePokemon() {
         guard
             let pokemon = pokemon,
