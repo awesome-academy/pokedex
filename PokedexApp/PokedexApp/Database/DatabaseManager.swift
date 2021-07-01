@@ -37,6 +37,20 @@ final class DatabaseManager {
         }
     }
     
+    func getPokemons() -> [PokemonDatabase]? {
+        let context = presistentContainer.viewContext
+        
+        do {
+            let request = PokemonDatabase.fetchRequest() as NSFetchRequest<PokemonDatabase>
+            let pokemons = try context.fetch(request)
+            return pokemons
+        } catch {
+            print("get pokemons in database failed: \(error.localizedDescription)")
+        }
+        
+        return nil
+    }
+    
     func addPokemon(pokemon: Pokemon, completion: @escaping (String) -> Void) {
         guard
             let pokemonTypes = pokemon.types,
@@ -69,7 +83,7 @@ final class DatabaseManager {
             newPokemon.id = Int32(id)
             newPokemon.name = nameFirst.name
             newPokemon.sprite = sprites.frontDefault
-            newPokemon.url = "\(App.API.urlAllPokemons)id"
+            newPokemon.url = "\(App.API.urlAllPokemons)\(id)"
             
             try context.save()
             completion(AlertDatabase.successfullyAdded.message)
@@ -78,6 +92,15 @@ final class DatabaseManager {
         } catch {
             print("add pokemon failed: \(error)")
             completion(AlertDatabase.addedFailure.message)
+        }
+    }
+    func deletePokemon(pokemon: PokemonDatabase) {
+        let context = presistentContainer.viewContext
+        do {
+            context.delete(pokemon)
+            try context.save()
+        } catch {
+            print("delete pokemon failed: \(error.localizedDescription)")
         }
     }
 }
