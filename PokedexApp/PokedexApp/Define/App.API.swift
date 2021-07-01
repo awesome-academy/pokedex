@@ -9,4 +9,5 @@ import Foundation
 
 extension App.API {
     static var urlAllPokemons = "https://pokeapi.co/api/v2/pokemon/"
+    static var urlTypePokemons = "https://pokeapi.co/api/v2/type/"
 }

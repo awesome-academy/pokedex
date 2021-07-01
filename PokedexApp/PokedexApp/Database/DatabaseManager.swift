@@ -55,7 +55,7 @@ final class DatabaseManager {
             let request = PokemonDatabase.fetchRequest() as NSFetchRequest<PokemonDatabase>
             let pokemons = try context.fetch(request)
             
-            pokemons.forEach { (pokemon) in
+            if pokemons.contains(where: { $0.id == id }) {
                 if pokemon.id == id {
                     completion(AlertDatabase.addDuplicated.message)
                     return
