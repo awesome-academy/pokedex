@@ -13,7 +13,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
    
         //configure font UIBarButtonItem
-        UIBarButtonItem.appearance().setTitleTextAttributes([.font: App.Font.pixel18, .foregroundColor: App.Color.fontText], for: .normal)
+        UIBarButtonItem.appearance().setTitleTextAttributes([.font: App.Font.pixel18,
+                                                             .foregroundColor: App.Color.fontText], for: .normal)
         
         //configure font & color UITabbar
         UITabBarItem.appearance().setTitleTextAttributes([.font: App.Font.pixel12], for: .normal)

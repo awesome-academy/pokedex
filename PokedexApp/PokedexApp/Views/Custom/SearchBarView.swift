@@ -13,7 +13,7 @@ class SearchBarView: UIView {
         let searchBar = UISearchBar()
         searchBar.backgroundColor = App.Color.backgroundSearchBar
         searchBar.searchTextField.backgroundColor = .white
-        searchBar.placeholder = "Enter name or id pokemon"
+        searchBar.placeholder = "Pokemon name you want to find?"
         searchBar.searchBarStyle = .minimal
         searchBar.autocapitalizationType = .none
         return searchBar

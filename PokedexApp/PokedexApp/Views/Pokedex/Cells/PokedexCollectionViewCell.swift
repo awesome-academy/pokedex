@@ -62,7 +62,6 @@ class PokedexCollectionViewCell: UICollectionViewCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        contentView.backgroundColor = nil
     }
     
     // MARK: - Setup method

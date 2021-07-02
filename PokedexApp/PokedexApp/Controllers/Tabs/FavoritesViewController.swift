@@ -71,11 +71,13 @@ class FavoritesViewController: UIViewController {
             guard let self = self else { return }
             switch result {
             case .success(let pokemonResponse):
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
                     let pokemonDetailViewController = DetailsViewController(pokemon: pokemonResponse)
-                    if let nav = self.navigationController {
-                        nav.pushViewController(pokemonDetailViewController, animated: true)
-                    }
+                    let navController = UINavigationController(rootViewController: pokemonDetailViewController)
+                    
+                    navController.modalPresentationStyle = .fullScreen
+                    self.transitionVc(vc: navController, duration: 0.32, type: .fromRight)
                 }
             case .failure(let error):
                 print("get pokemon failed: \(error)")
@@ -94,6 +96,22 @@ class FavoritesViewController: UIViewController {
             self.tableView.reloadData()
             self.spinner.stopAnimating()
         }
+    }
+    private func notificationDelete(pokemon: PokemonDatabase, indexPath: IndexPath) {
+        let alert = UIAlertController(title: "Notification",
+                                      message: "Are you sure to remove this pokemon from the list?",
+                                      preferredStyle: UIAlertController.Style.alert)
+        
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default) { [weak self] _ in
+            guard let self = self else { return }
+            DatabaseManager.shared.deletePokemon(pokemon: pokemon)
+            self.dataFavorites.remove(at: indexPath.row)
+            self.tableView.deleteRows(at: [indexPath], with: .fade)
+        })
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        self.present(alert, animated: true, completion: nil)
     }
 }
 
@@ -133,24 +151,24 @@ extension FavoritesViewController: UITableViewDataSource {
         return 116
     }
     
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            if let pokemon = dataFavorites[indexPath.row] as? PokemonDatabase  {
-                let alert = UIAlertController(title: "Notification",
-                                              message: "Are you sure to remove this pokemon from the list?",
-                                              preferredStyle: UIAlertController.Style.alert)
-                
-                alert.addAction(UIAlertAction(title: "OK", style: UIAlertAction.Style.default, handler: { [weak self] _ in
-                    guard let self = self else { return }
-                    DatabaseManager.shared.deletePokemon(pokemon: pokemon)
-                    self.dataFavorites.remove(at: indexPath.row)
-                    self.tableView.deleteRows(at: [indexPath], with: .fade)
-                }))
-                
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-                
-                self.present(alert, animated: true, completion: nil)
-            }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        let deleteAction = UIContextualAction(style: .destructive,
+                                              title: "") { [weak self] (_, _, completion) in
+            guard
+                let self = self,
+                let pokemon = (self.dataFavorites[indexPath.row]) as? PokemonDatabase
+            else { return }
+            
+            self.notificationDelete(pokemon: pokemon, indexPath: indexPath)
+            completion(true)
         }
+        
+        deleteAction.image = UIGraphicsImageRenderer(size: CGSize(width: 70, height: 70)).image { _ in
+            guard let image = UIImage(named: "trash") else { return }
+            image.draw(in: CGRect(x: 0, y: 0, width: 70, height: 70))
+        }
+        deleteAction.backgroundColor = App.Color.backgroundColor
+        return UISwipeActionsConfiguration(actions: [deleteAction])
     }
 }

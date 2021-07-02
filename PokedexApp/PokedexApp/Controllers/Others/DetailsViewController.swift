@@ -11,16 +11,6 @@ class DetailsViewController: UIViewController {
     private var pokemon: Pokemon?
     private let spinner = UIActivityIndicatorView()
     
-    private let backgroundColorHeader: UIView = {
-        let uiView = UIView()
-        uiView.layer.masksToBounds = true
-        uiView.layer.cornerRadius = 40
-        uiView.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
-        uiView.translatesAutoresizingMaskIntoConstraints = false
-        uiView.isHidden = true
-        return uiView
-    }()
-    
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsVerticalScrollIndicator = false
@@ -43,7 +33,7 @@ class DetailsViewController: UIViewController {
         return stackView
     }()
     
-    let imagePokemon: UIImageView = {
+    private let imagePokemon: UIImageView = {
         let uiImageView = UIImageView()
         uiImageView.clipsToBounds = true
         uiImageView.contentMode = .scaleAspectFit
@@ -54,21 +44,39 @@ class DetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        configureSpinner()
         configure()
-        configureImagePokemon()
+        configureSpinner()
         configureScrollView()
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        spinner.frame = view.bounds
+        scrollView.frame = view.bounds
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        stackView.subviews.forEach { (view) in
-            view.removeFromSuperview()
+        configureImagePokemon { [weak self] (image) in
+            guard let self = self else { return }
+            
+            if let image = image {
+                DispatchQueue.main.async {
+                    self.imagePokemon.image = image
+                    self.resetInfomationDetail()
+                }
+            } else {
+                self.resetInfomationDetail()
+            }
         }
-        
+    }
+    
+    private func resetInfomationDetail() {
+        configureConstraintContentView()
+        configureConstraintStackView()
         spinner.stopAnimating()
-        backgroundColorHeader.isHidden = false
         stackView.isHidden = false
     }
     
@@ -88,18 +96,21 @@ class DetailsViewController: UIViewController {
         guard let nav = navigationController else { return }
 
         view.backgroundColor = App.Color.backgroundColor
-        view.addSubview(backgroundColorHeader)
-        backgroundColorHeader.backgroundColor = pokemonType.type.name.backgroundColor
         navigationItem.title = obj.name.capitalizingFirstLetter()
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "#\(id)",
                                                             style: .plain,
                                                             target: self,
                                                             action: #selector(didTapSavePokemon))
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "chevron.left",
+                                                                          withConfiguration: UIImage.SymbolConfiguration(pointSize: 16, weight: .bold)),
+                                                           style: .plain,
+                                                           target: self,
+                                                           action: #selector(didTapDismiss))
         nav.navigationBar.shadowImage = UIImage() // delete shadow navigation bar
         nav.navigationBar.tintColor = App.Color.fontText
         nav.navigationBar.barTintColor = pokemonType.type.name.backgroundColor
     }
-    
+
     private func configureSpinner() {
         view.addSubview(spinner)
         spinner.color = .white
@@ -110,10 +121,10 @@ class DetailsViewController: UIViewController {
         view.addSubview(scrollView)
         scrollView.contentInset = UIEdgeInsets(top: 0,
                                                left: 0,
-                                               bottom: view.bounds.height < 800 ? 25 : 98,
+                                               bottom: 25,
                                                right: 0)
-        scrollView.addSubview(contentView)
         scrollView.delegate = self
+        scrollView.addSubview(contentView)
         contentView.addSubview(stackView)
     }
     
@@ -135,7 +146,6 @@ class DetailsViewController: UIViewController {
         ])
     }
     private func configureConstraintStackView() {
-        //container Image
         guard
             let pokemon = pokemon,
             let types = pokemon.types,
@@ -146,6 +156,7 @@ class DetailsViewController: UIViewController {
             let pokemonType = types.first
         else { return }
             
+        //container Image
         let containerImage = UIView()
         containerImage.backgroundColor = pokemonType.type.name.backgroundColor
         containerImage.translatesAutoresizingMaskIntoConstraints = false
@@ -153,23 +164,60 @@ class DetailsViewController: UIViewController {
         containerImage.layer.cornerRadius = 40
         containerImage.layer.maskedCorners = [.layerMinXMaxYCorner, .layerMaxXMaxYCorner]
         
-        let multiplierContainerImage = (238 / scrollView.bounds.height)
+        let stackViewTypesRoot = UIStackView()
+        stackViewTypesRoot.axis = .horizontal
+        stackViewTypesRoot.translatesAutoresizingMaskIntoConstraints = false
+        stackViewTypesRoot.alignment = .top
+        
+        let textInfo = UILabel()
+        textInfo.text = "Info"
+        textInfo.font = App.Font.pixel18
+        textInfo.textColor = App.Color.fontText
+        textInfo.translatesAutoresizingMaskIntoConstraints = false
+        
+        let stackViewWeightRoot = UIStackView()
+        stackViewWeightRoot.axis = .horizontal
+        stackViewWeightRoot.alignment = .top
+        stackViewWeightRoot.translatesAutoresizingMaskIntoConstraints = false
+        
+        let stackViewHeightRoot = UIStackView()
+        stackViewHeightRoot.axis = .horizontal
+        stackViewHeightRoot.translatesAutoresizingMaskIntoConstraints = false
+        stackViewHeightRoot.alignment = .top
+        
+        let stackViewAbilitiesRoot = UIStackView()
+        stackViewAbilitiesRoot.axis = .horizontal
+        stackViewAbilitiesRoot.translatesAutoresizingMaskIntoConstraints = false
+        stackViewAbilitiesRoot.alignment = .top
+        
+        let textBaseStats = UILabel()
+        textBaseStats.font = App.Font.pixel16
+        textBaseStats.text = "Base Stats"
+        textBaseStats.textColor = App.Color.fontText
+        textBaseStats.translatesAutoresizingMaskIntoConstraints = false
+        
+        let stackViewRootStats = UIStackView()
+        stackViewRootStats.axis = .vertical
+        stackViewRootStats.spacing = 25
+        stackViewRootStats.translatesAutoresizingMaskIntoConstraints = false
+        stackViewRootStats.alignment = .top
         
         stackView.addArrangedSubview(containerImage)
+        stackView.addArrangedSubview(textInfo)
+        stackView.addArrangedSubview(stackViewTypesRoot)
+        stackView.addArrangedSubview(stackViewWeightRoot)
+        stackView.addArrangedSubview(stackViewHeightRoot)
+        stackView.addArrangedSubview(stackViewAbilitiesRoot)
+        stackView.addArrangedSubview(textBaseStats)
+        stackView.addArrangedSubview(stackViewRootStats)
+        
         NSLayoutConstraint.activate([
             containerImage.topAnchor.constraint(equalTo: scrollView.topAnchor),
             containerImage.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
             containerImage.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            containerImage.heightAnchor.constraint(equalTo: scrollView.heightAnchor, multiplier: multiplierContainerImage),
+            containerImage.heightAnchor.constraint(equalTo: scrollView.heightAnchor,
+                                                   multiplier:  (238 / scrollView.bounds.height)),
             containerImage.widthAnchor.constraint(equalTo: scrollView.widthAnchor)
-        ])
-        
-        NSLayoutConstraint.activate([
-            backgroundColorHeader.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundColorHeader.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundColorHeader.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            backgroundColorHeader.widthAnchor.constraint(equalTo: view.widthAnchor),
-            backgroundColorHeader.heightAnchor.constraint(equalTo: scrollView.heightAnchor, multiplier: multiplierContainerImage),
         ])
         
         containerImage.addSubview(imagePokemon)
@@ -177,38 +225,24 @@ class DetailsViewController: UIViewController {
             imagePokemon.centerXAnchor.constraint(equalTo: containerImage.centerXAnchor),
             imagePokemon.centerYAnchor.constraint(equalTo: containerImage.centerYAnchor),
             imagePokemon.heightAnchor.constraint(equalTo: containerImage.heightAnchor,
-                                                 multiplier: (250 / multiplierContainerImage)),
+                                                 multiplier: (250 / (238 / scrollView.bounds.height))),
             imagePokemon.widthAnchor.constraint(equalTo: containerImage.widthAnchor,
                                                 multiplier: (250 / view.bounds.width))
         ])
         
-        //container title info
-        let textInfo = UILabel()
-        textInfo.text = "Info"
-        textInfo.font = App.Font.pixel18
-        textInfo.textColor = App.Color.fontText
-        textInfo.translatesAutoresizingMaskIntoConstraints = false
-        
-        stackView.addArrangedSubview(textInfo)
-        NSLayoutConstraint.activate([
-            textInfo.topAnchor.constraint(equalTo: containerImage.bottomAnchor, constant: 28),
-            textInfo.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 39),
-            textInfo.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-        ])
+        guard var tempView = stackView.subviews.first else { return }
+        stackView.subviews.enumerated().forEach { (index, view) in
+            if index != 0 {
+                NSLayoutConstraint.activate([
+                    view.topAnchor.constraint(equalTo: tempView.safeAreaLayoutGuide.bottomAnchor, constant: 28),
+                    view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 39),
+                    view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+                ])
+                tempView = view
+            }
+        }
         
         // type
-        let stackViewTypesRoot = UIStackView()
-        stackViewTypesRoot.axis = .horizontal
-        stackViewTypesRoot.translatesAutoresizingMaskIntoConstraints = false
-        stackViewTypesRoot.alignment = .top
-        
-        stackView.addArrangedSubview(stackViewTypesRoot)
-        NSLayoutConstraint.activate([
-            stackViewTypesRoot.topAnchor.constraint(equalTo: textInfo.safeAreaLayoutGuide.bottomAnchor, constant: 28),
-            stackViewTypesRoot.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 39),
-            stackViewTypesRoot.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-        ])
-        
         let titleType = UILabel()
         titleType.text = "Type"
         titleType.font = App.Font.pixel14
@@ -239,18 +273,6 @@ class DetailsViewController: UIViewController {
         ])
         
         // weight
-        let stackViewWeightRoot = UIStackView()
-        stackViewWeightRoot.axis = .horizontal
-        stackViewWeightRoot.alignment = .top
-        stackViewWeightRoot.translatesAutoresizingMaskIntoConstraints = false
-
-        stackView.addArrangedSubview(stackViewWeightRoot)
-        NSLayoutConstraint.activate([
-            stackViewWeightRoot.topAnchor.constraint(equalTo: stackViewTypesRoot.safeAreaLayoutGuide.bottomAnchor, constant: 28),
-            stackViewWeightRoot.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 39),
-            stackViewWeightRoot.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-        ])
-
         let titleWeight = UILabel()
         titleWeight.text = "Weight"
         titleWeight.font = App.Font.pixel14
@@ -271,18 +293,6 @@ class DetailsViewController: UIViewController {
         ])
 
         // height
-        let stackViewHeightRoot = UIStackView()
-        stackViewHeightRoot.axis = .horizontal
-        stackViewHeightRoot.translatesAutoresizingMaskIntoConstraints = false
-        stackViewHeightRoot.alignment = .top
-
-        stackView.addArrangedSubview(stackViewHeightRoot)
-        NSLayoutConstraint.activate([
-            stackViewHeightRoot.topAnchor.constraint(equalTo: stackViewWeightRoot.safeAreaLayoutGuide.bottomAnchor, constant: 28),
-            stackViewHeightRoot.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 39),
-            stackViewHeightRoot.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-        ])
-
         let titleHeight = UILabel()
         titleHeight.font = App.Font.pixel14
         titleHeight.text = "Height"
@@ -303,19 +313,6 @@ class DetailsViewController: UIViewController {
         ])
 
         // abilities
-        let stackViewAbilitiesRoot = UIStackView()
-        stackViewAbilitiesRoot.axis = .horizontal
-        stackViewAbilitiesRoot.translatesAutoresizingMaskIntoConstraints = false
-        stackViewAbilitiesRoot.alignment = .top
-
-
-        stackView.addArrangedSubview(stackViewAbilitiesRoot)
-        NSLayoutConstraint.activate([
-            stackViewAbilitiesRoot.topAnchor.constraint(equalTo: stackViewHeightRoot.safeAreaLayoutGuide.bottomAnchor, constant: 28),
-            stackViewAbilitiesRoot.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 39),
-            stackViewAbilitiesRoot.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-        ])
-
         let titleAbilities = UILabel()
         titleAbilities.font = App.Font.pixel14
         titleAbilities.text = "Abilities"
@@ -346,34 +343,7 @@ class DetailsViewController: UIViewController {
             titleAbilities.widthAnchor.constraint(equalTo: stackViewAbilitiesRoot.widthAnchor, multiplier: 0.4)
         ])
 
-        // base stats
-        let textBaseStats = UILabel()
-        textBaseStats.font = App.Font.pixel16
-        textBaseStats.text = "Base Stats"
-        textBaseStats.textColor = App.Color.fontText
-        textBaseStats.translatesAutoresizingMaskIntoConstraints = false
-
-        stackView.addArrangedSubview(textBaseStats)
-        NSLayoutConstraint.activate([
-            textBaseStats.topAnchor.constraint(equalTo: stackViewAbilitiesRoot.safeAreaLayoutGuide.bottomAnchor, constant: 34),
-            textBaseStats.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 39),
-            textBaseStats.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-        ])
-
         // stats
-        let stackViewRootStats = UIStackView()
-        stackViewRootStats.axis = .vertical
-        stackViewRootStats.spacing = 25
-        stackViewRootStats.translatesAutoresizingMaskIntoConstraints = false
-        stackViewRootStats.alignment = .top
-
-        stackView.addArrangedSubview(stackViewRootStats)
-        NSLayoutConstraint.activate([
-            stackViewRootStats.topAnchor.constraint(equalTo: textBaseStats.safeAreaLayoutGuide.bottomAnchor, constant: 20),
-            stackViewRootStats.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor, constant: 39),
-            stackViewRootStats.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-        ])
-
         stats.enumerated().forEach { (index, stat) in
             if index != 3 && index != 4 {
                 let stackViewStat = UIStackView()
@@ -416,7 +386,6 @@ class DetailsViewController: UIViewController {
                     uiViewStat.widthAnchor.constraint(equalTo: scrollView.widthAnchor, multiplier: 0.6),
                 ])
 
-
                 uiViewStat.addSubview(data)
                 
                 let stat = CGFloat(stat.baseStat <= 100 ? stat.baseStat : 100)
@@ -443,15 +412,6 @@ class DetailsViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        spinner.frame = view.bounds
-        scrollView.frame = view.bounds
-        configureConstraintContentView()
-        configureConstraintStackView()
-    }
-    
     @objc private func didTapSavePokemon() {
         if let pokemon = pokemon {
             DatabaseManager.shared.addPokemon(pokemon: pokemon) { [weak self] (result) in
@@ -465,7 +425,11 @@ class DetailsViewController: UIViewController {
         }
     }
     
-    func configureImagePokemon() {
+    @objc private func didTapDismiss() {
+        dismissDetail(duration: 0.2, type: .fromLeft)
+    }
+    
+    func configureImagePokemon(completion: @escaping (UIImage?) -> Void) {
         guard
             let pokemon = pokemon,
             let id = pokemon.id,
@@ -481,6 +445,7 @@ class DetailsViewController: UIViewController {
         
         if let cachedImage = App.Cache.cacheImage.object(forKey: keyCache) {
             imagePokemon.image = cachedImage
+            completion(nil)
             return
         }
         
@@ -488,10 +453,10 @@ class DetailsViewController: UIViewController {
             guard let url = URL(string: sprites.frontDefault) else { return }
             
             if let data = try? Data(contentsOf: url) {
-                DispatchQueue.main.async { [weak self] in
+                DispatchQueue.main.async {
                     guard let image = UIImage(data: data) else { return }
-                    self?.imagePokemon.image = image
                     App.Cache.cacheImage.setObject(image, forKey: keyCache)
+                    completion(image)
                 }
             }
         }
@@ -500,12 +465,19 @@ class DetailsViewController: UIViewController {
 
 extension DetailsViewController: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard
+            let pokemon = pokemon,
+            let types = pokemon.types,
+            let pokemonType = types.first
+        else { return }
+        
         let positionY = scrollView.contentOffset.y
         
-        if positionY > 0 {
-            backgroundColorHeader.isHidden = true
+        if positionY >= 0 {
+            scrollView.backgroundColor = App.Color.backgroundColor
         } else {
-            backgroundColorHeader.isHidden = false
+            scrollView.backgroundColor = pokemonType.type.name.backgroundColor
+            contentView.backgroundColor = App.Color.backgroundColor
         }
     }
 }
