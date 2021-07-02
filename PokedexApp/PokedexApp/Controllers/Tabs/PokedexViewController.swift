@@ -43,6 +43,7 @@ class PokedexViewController: UIViewController {
     private var nameType = ""
     private var spinner = UIActivityIndicatorView()
     private var checkLoad = false
+    private var checkNav = false
     private let layout = UICollectionViewFlowLayout()
     private let uiViewSearchBar = SearchBarView()
     
@@ -60,10 +61,18 @@ class PokedexViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
         navigationItem.title = "Pokedex"
+        checkNav = true
+        
         if let nav = navigationController {
             nav.navigationBar.barTintColor = App.Color.backgroundColorHeader
             nav.navigationBar.tintColor = App.Color.fontText
+        }
+        
+        if !nameType.isEmpty {
+            pokemons = []
+            collectionView.reloadData()
         }
     }
     
@@ -89,6 +98,8 @@ class PokedexViewController: UIViewController {
     private func configure() {
         view.backgroundColor = App.Color.backgroundColor
         navigationItem.title = "Pokedex"
+        pokemons = []
+        pokemonsType = []
     }
     
     private func configureCollectionView() {
@@ -172,7 +183,7 @@ class PokedexViewController: UIViewController {
         textNotification.text = ""
         setupLayoutSearchBar(height: 0)
         nameType = type
-        
+
         APIService.shared.fetchPokemonTypeURL(type: type) { [weak self] (result) in
             switch result {
             case .success(let pokemons):
@@ -210,11 +221,11 @@ class PokedexViewController: UIViewController {
         spinner.startAnimating()
         textNotification.text = ""
         
-        let pokemon = pokemons.filter { $0.name == queryName }
+        let pokemonsFilter = pokemons.filter { $0.name.contains(queryName) }
         pokemons = []
         
-        if let pokemon = pokemon.first {
-            pokemons.append(pokemon)
+        if !pokemonsFilter.isEmpty {
+            pokemons = pokemonsFilter
             resetCollectionView()
             return
         }
@@ -228,11 +239,13 @@ class PokedexViewController: UIViewController {
             guard let self = self else { return }
             switch result {
             case .success(let pokemonResponse):
-                DispatchQueue.main.async {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
                     let pokemonDetailViewController = DetailsViewController(pokemon: pokemonResponse)
-                    if let nav = self.navigationController {
-                        nav.pushViewController(pokemonDetailViewController, animated: true)
-                    }
+                    let navController = UINavigationController(rootViewController: pokemonDetailViewController)
+                    
+                    navController.modalPresentationStyle = .fullScreen
+                    self.transitionVc(vc: navController, duration: 0.32, type: .fromRight)
                 }
             case .failure(let error):
                 print("get pokemon failed: \(error)")
@@ -252,8 +265,14 @@ extension PokedexViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
 
-        let pokemonURL = pokemonsType.isEmpty ? pokemons[indexPath.row].url : pokemonsType[indexPath.row].pokemon.url
-        getPokemon(url: pokemonURL)
+        if checkNav {
+            let pokemonURL = pokemons.isEmpty ?
+                pokemonsType[indexPath.row].pokemon.url :
+                pokemons[indexPath.row].url
+            
+            getPokemon(url: pokemonURL)
+            checkNav = false
+        }
     }
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -310,7 +329,7 @@ extension PokedexViewController: UICollectionViewDataSource {
 
 extension PokedexViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        if searchText.isEmpty && (pokemons.count == 1 || pokemons.count == 0) {
+        if searchText.isEmpty {
             APIService.offset = 0
             pokemons = []
             choiceRunAPI()

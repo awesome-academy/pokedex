@@ -19,7 +19,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let pokedexNav = UINavigationController(rootViewController: pokedexViewController)
         
         let titlePokedex = UILabel()
-        titlePokedex.font = App.Font.pixel12
+        titlePokedex.font = App.Font.pixel14
         titlePokedex.text = "Pokedex"
         titlePokedex.textColor = App.Color.fontTextTitle
         
@@ -31,7 +31,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let genresNav = UINavigationController(rootViewController: genresViewController)
         
         let titleGenres = UILabel()
-        titleGenres.font = App.Font.pixel12
+        titleGenres.font = App.Font.pixel14
         titleGenres.text = "Genres"
         titleGenres.textColor = App.Color.fontTextTitle
         
@@ -43,7 +43,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let favoritesNav = UINavigationController(rootViewController: favoritesViewController)
         
         let titlefavorites = UILabel()
-        titlefavorites.font = App.Font.pixel12
+        titlefavorites.font = App.Font.pixel14
         titlefavorites.text = "Favorites"
         titlefavorites.textColor = App.Color.fontTextTitle
         
