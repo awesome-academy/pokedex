@@ -11,7 +11,7 @@ class PokedexViewController: UIViewController {
     
     // MARK: - Setup properties
     
-    private let collectionView: UICollectionView = {
+    let collectionView: UICollectionView = {
         let collectionView = UICollectionView(frame: .zero,
                                               collectionViewLayout: UICollectionViewFlowLayout())
         
@@ -38,17 +38,26 @@ class PokedexViewController: UIViewController {
         return textNotification
     }()
     
-    private var pokemons = [PokemonURL]()
-    private var pokemonsType = [PokemonsTypeURL]()
-    private var nameType = ""
+    var pokemons = [PokemonURL]()
+    var pokemonsType = [PokemonsTypeURL]()
+    var nameType = ""
+    var checkNav = false
     private var spinner = UIActivityIndicatorView()
     private var checkLoad = false
-    private var checkNav = false
     private let layout = UICollectionViewFlowLayout()
     private let uiViewSearchBar = SearchBarView()
     
     // MARK: - Setup init
-
+    
+    init(nameType: String) {
+        super.init(nibName: nil, bundle: nil)
+        self.nameType = nameType
+    }
+    
+    required init?(coder: NSCoder) {
+        return nil
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -77,8 +86,8 @@ class PokedexViewController: UIViewController {
     }
     
     override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
         navigationItem.title = ""
+        super.viewWillDisappear(animated)
     }
     
     // MARK: - Setup layout
@@ -147,7 +156,7 @@ class PokedexViewController: UIViewController {
         ])
     }
     
-    @objc private func didTapDissmissKeyboard() {
+    @objc func didTapDissmissKeyboard() {
         view.endEditing(true)
     }
     
@@ -177,14 +186,13 @@ class PokedexViewController: UIViewController {
         }
     }
     
-    func getPokemonsTypeFromAPI(type: String) {
+    func getPokemonsTypeFromAPI() {
         layout.footerReferenceSize = CGSize(width: collectionView.frame.size.width, height: 100)
         spinner.startAnimating()
         textNotification.text = ""
         setupLayoutSearchBar(height: 0)
-        nameType = type
 
-        APIService.shared.fetchPokemonTypeURL(type: type) { [weak self] (result) in
+        APIService.shared.fetchPokemonTypeURL(type: nameType) { [weak self] (result) in
             switch result {
             case .success(let pokemons):
                 guard let pokemons = pokemons, let self = self else { return }
@@ -216,7 +224,7 @@ class PokedexViewController: UIViewController {
         checkLoad.toggle()
     }
     
-    private func getPokemonByName(queryName: String) {
+    func getPokemonByName(queryName: String) {
         layout.footerReferenceSize = CGSize(width: collectionView.frame.size.width, height: 100)
         spinner.startAnimating()
         textNotification.text = ""
@@ -234,7 +242,7 @@ class PokedexViewController: UIViewController {
         textNotification.text = "Pokemon you're looking for doesn't exist"
     }
     
-    private func getPokemon(url: String) {        
+    func getPokemon(url: String) {        
         APIService.shared.fetchPokemonFromURL(url: url) { [weak self] (result) in
             guard let self = self else { return }
             switch result {
@@ -254,8 +262,8 @@ class PokedexViewController: UIViewController {
     }
     
     static func instance(nameType: String) -> PokedexViewController {
-        let pokedexVC = PokedexViewController()
-        pokedexVC.getPokemonsTypeFromAPI(type: nameType)
+        let pokedexVC = PokedexViewController(nameType: nameType)
+        pokedexVC.getPokemonsTypeFromAPI()
         return pokedexVC
     }
 }
@@ -266,9 +274,9 @@ extension PokedexViewController: UICollectionViewDelegate {
         collectionView.deselectItem(at: indexPath, animated: true)
 
         if checkNav {
-            let pokemonURL = pokemons.isEmpty ?
-                pokemonsType[indexPath.row].pokemon.url :
-                pokemons[indexPath.row].url
+            let pokemonURL = pokemonsType.isEmpty ?
+                pokemons[indexPath.row].url :
+                pokemonsType[indexPath.row].pokemon.url
             
             getPokemon(url: pokemonURL)
             checkNav = false
